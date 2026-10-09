@@ -3,12 +3,11 @@ from pathlib import Path
 import json
 import nibabel as nib
 import os
-import pydicom
 from dcm2niix import main
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
-
+import config
 
 class Patient:
     def __init__(self, path):
@@ -118,11 +117,11 @@ class Patient:
         axes[1, 0].hist(magn_for_hist, density=True, bins=24)
         # axes[1,1].hist(phase_for_hist, density=False, bins=64)
         # plt.show()
-        plt.savefig("test.jpg")
+        plt.savefig(config.FIGURES_DIR / "test.jpg")
         plt.close(fig)
         plt.figure(figsize=(12, 12))
         plt.hist(phase_for_hist, bins=24)
-        plt.savefig("phase_hist.jpg")
+        plt.savefig(config.FIGURES_DIR / "phase_hist.jpg")
         plt.close()
 
         self.magn = magn_img_data
