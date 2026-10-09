@@ -151,7 +151,7 @@ class BackGroundPhaseCorrector:
             predicted = np.asarray([fit_func(xy, *params0[0]) for xy in self.background_coords])
             residual = background_slice - predicted
 
-            # need to be upgraded
+            # TODO: need to be upgraded
             sigma = 1.4826 * np.median(abs(residual - np.median(residual)))
             # sigma = np.std(residual,ddof=1)
             # res_mask = abs(residual) > 3*sigma
@@ -178,23 +178,48 @@ class BackGroundPhaseCorrector:
         print("QC:\n")
         corrected_raw = self.predict(robust_used=False)
 
+
         # old_slice = self.phase[:,:,0][self.mask]
         # new_slice = self.phase[:,:, 0][self.fit_mask]
-        old_slice = corrected_raw[0][self.mask]
+        raw_mean = 0
+        raw_std = 0
+        old_background_mean = 0
+        old_background_std = 0
 
-        old_background_mean = np.mean(old_slice)
+        for t in range(self.shape[2]):
+            raw_phase = self.phase[:, :, t][self.mask]
+            raw_mean += np.mean(raw_phase)
+            raw_std += np.std(raw_phase, ddof=1)
 
+            old_slice = corrected_raw[t][self.mask]
+            old_background_mean += np.mean(old_slice)
+            old_background_std += np.std(old_slice, ddof=1)
 
-        old_background_std = np.std(old_slice, ddof=1)
-        print(f"Mean in the background: {old_background_mean:.3f}")
-        print(f"Std in the background: {old_background_std:.3f}\n")
+        raw_mean /= self.shape[2]
+        raw_std /= self.shape[2]
+        old_background_mean /= self.shape[2]
+        old_background_std /= self.shape[2]
+
+        print(f"Mean in the background before/after phase correction:  {raw_mean:.3f} / {old_background_mean:.3f}")
+        print(f"Std in the background before/after phase correction:  {raw_std:.3f} / {old_background_std:.3f}\n")
+
         if self.robust_used:
             corrected_new = self.predict(robust_used=self.robust_used)
-            new_slice = corrected_new[0][self.fit_mask]
-            new_background_mean = np.mean(new_slice)
-            new_background_std = np.std(new_slice, ddof=1)
-            print(f"Mean in the background before/after correction: {old_background_mean:.3f} / {new_background_mean:.3f}")
-            print(f"Std in the background before/after correction: {old_background_std:.3f} / {new_background_std:.3f}\n")
+
+            new_background_mean = 0
+            new_background_std = 0
+
+            for t in range(self.shape[2]):
+                new_slice = corrected_new[t][self.fit_mask]
+                new_background_mean += np.mean(new_slice)
+                new_background_std += np.std(new_slice, ddof=1)
+
+            new_background_mean /= self.shape[2]
+            new_background_std /= self.shape[2]
+
+            print(f"Mean in the background before/after robust correction: {old_background_mean:.3f} / {new_background_mean:.3f}")
+            print(f"Std in the background before/after robust correction: {old_background_std:.3f} / {new_background_std:.3f}\n")
+
         if view:
             if self.robust_used:
                 fig, ax = plt.subplots(2,2, figsize=(12,12), sharex=False)
