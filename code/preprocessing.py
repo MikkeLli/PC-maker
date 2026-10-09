@@ -78,6 +78,7 @@ class BackGroundPhaseCorrector:
         param_in_time = np.ndarray(shape=(self.shape[2], 6))
 
         print("Performing fitting...")
+        
         for t in range (self.shape[2]):  # цикл по фреймам
             time_slice = self.phase[:,:,t]
             ydata = time_slice[mask]
