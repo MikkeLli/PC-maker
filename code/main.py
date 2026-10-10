@@ -23,7 +23,7 @@ def correct_background(patient, use_robust: bool = False, iterations: int = 1,
 
 
 
-patient_path = config.PATIENTS_DIR / "Sinus"
+patient_path = config.PATIENTS_DIR / "Aqueduct"
 
 prep_config = PreprocessConfig(temporal_std_threshold_q=600.0, magnitude_threshold_q=300)
 # возвращаем (y, x, t)
@@ -33,10 +33,10 @@ test_patient.load_dicom()
 test_patient.make_background_mask(prep_config.temporal_std_threshold_q, prep_config.magnitude_threshold_q)
 
 
-test_patient.corrected_phase = correct_background(test_patient, qc=True, use_robust=True) # the shape is inverted to raw_phase
+test_patient.corrected_phase = correct_background(test_patient, qc=False, use_robust=False) # the shape is inverted to raw_phase
 
 Corrector = AliasingCorrector(test_patient)
 
-test_patient.corrected_phase, _ = Corrector.temporal_unwrap(view=False)
+test_patient.corrected_phase, _ = Corrector.temporal_unwrap(view=True)
 
 

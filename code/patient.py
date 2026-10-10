@@ -13,11 +13,11 @@ class Patient:
     def __init__(self, path):
         self.path_to_dicom_dir = path
         self.dicom_phase = None
-        self.magn = None
+        self.magnitude_image = None
         self.raw_phase = None #(y,x,t)
         self.corrected_phase = None #(t, y, x) after BackgroundCorrection and AliasingCorrection
 
-        self.metadata = None
+        self.metadata = None #VENC, shape (y, x, t), jump_value
         self.image_dimension = None
         self.background_mask = None
 
@@ -124,7 +124,7 @@ class Patient:
         plt.savefig(config.FIGURES_DIR / "phase_hist.jpg")
         plt.close()
 
-        self.magn = magn_img_data
+        self.magnitude_image = magn_img_data
         self.raw_phase = phase_img_data
         self.metadata = img_data
         self.metadata['jump_value'] = 4096
@@ -133,7 +133,7 @@ class Patient:
     def make_background_mask(self, std_thres, magn_thres):
         if self.image_dimension == "4D" or self.image_dimension == "2D+t":
             # Берем дисперсию фазы и первый фрейм магнитуды
-            magn_slice = self.magn[:, :, 0]
+            magn_slice = self.magnitude_image[:, :, 0]
             std = np.std(self.raw_phase, axis=2, ddof=1)
             # print(std[310,310] < std_thres)
             background_mask_std = (std < std_thres)
@@ -151,8 +151,8 @@ class Patient:
             # plt.show()
             plt.close()
         elif self.image_dimension == "3D" or self.image_dimension == "2D":
-            threshold = np.percentile(self.magn, 20)
-            background_mask = self.magn > threshold
+            threshold = np.percentile(self.magnitude_image, 20)
+            background_mask = self.magnitude_image > threshold
         else:
             raise ValueError("Dim is not correct")
         self.background_mask = closed_mask.astype(np.bool)
