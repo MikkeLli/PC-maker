@@ -37,6 +37,6 @@ test_patient.corrected_phase = correct_background(test_patient, qc=False, use_ro
 
 Corrector = AliasingCorrector(test_patient)
 
-test_patient.corrected_phase, _ = Corrector.temporal_unwrap(view=True)
+test_patient.corrected_phase, _ = Corrector.temporal_unwrap(view=True) # TODO: пробросить изменения пациента в самого пациента
 
 
